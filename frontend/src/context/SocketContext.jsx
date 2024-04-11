@@ -15,7 +15,7 @@ export const SocketContextProvider = ({ children }) => {
 
     useEffect(() => {
         if(authUser){
-            const socket = io("https://enigmoz-chat-app.onrender.com",{
+            const socket = io("https://enigmoz-chatapp.onrender.com",{
                 query: {
                     userId: authUser._id,
                 },
