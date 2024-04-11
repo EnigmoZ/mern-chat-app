@@ -25,20 +25,20 @@ export const signup = async(req,resp)=>{
         const newUser = new User({
             fullname,
             username,
-            password:hashedpassword,
+            password: hashedpassword,
             gender,
-            profilepic: gender === "male" ? boyProfilePic : girlProfilePic,
+            profilePic: gender === "male" ? boyProfilePic : girlProfilePic,
         })
         if(newUser){
             // generate jwt token here
-            generateTokenAndSetCookie(newUser._id,resp);   
+            generateTokenAndSetCookie(newUser._id, resp);   
             await newUser.save();
 
             resp.status(201).json({
                 _id: newUser._id,
                 fullname: newUser.fullname,
                 username: newUser.username,
-                profilePic: newUser.profilepic,
+                profilePic: newUser.profilePic,
             })
         }else{
             resp.status(400).json({error:"Invalid User Data"});
@@ -51,28 +51,71 @@ export const signup = async(req,resp)=>{
     }
 }
 
-export const login = async (req,resp)=>{
+export const login = async (req, resp) => {
     try {
-        const {username,password} = req.body;
-        const user = await User.findOne({username});
-        const isPasswordCorrect = await bcrypt.compare(password,user?.password || "");
+        const { username, password } = req.body;
 
-        if(!user || !isPasswordCorrect){
-            return resp.status(400).json({error: "Invalid Username Or Password"});
+        // Find user by username
+        const user = await User.findOne({ username });
+        if (!user) {
+            return resp.status(400).json({ error: "Invalid Username" });
         }
 
+        // Check password
+        const isPasswordCorrect = await bcrypt.compare(password, user.password);
+        if (!isPasswordCorrect) {
+            return resp.status(400).json({ error: "Invalid Password" });
+        }
+
+        // Generate JWT token and set cookie
         generateTokenAndSetCookie(user._id, resp);
+
+        // Send response
         resp.status(200).json({
             _id: user._id,
             fullname: user.fullname,
             username: user.username,
-            profilePic: user.profilepic,
-        })
+            gender: user.gender,
+            profilePic: user.profilePic,
+        });
     } catch (error) {
-        console.log("error in login controller",error.message)
-        resp.status(500).json({error: "Internal Server Error"})        
+        console.log("Error in login controller:", error.message);
+        resp.status(500).json({ error: "Internal Server Error" });
     }
 }
+
+// export const login = async(req , resp) => {
+//     try {
+//         const {username, password}= req.body;
+                
+//         console.log("username: ",username);
+//         console.log("password: ",password);
+//         const user = await User.findOne({username});
+//         if (!user) {
+//             return resp.status(400).json({ error: "Invalid Username" });
+//         }
+
+//         // const isPasswordCorrect = await bcrypt.compare(password, user?.password || "");
+
+//         const isPasswordCorrect = await bcrypt.compare(password, user.password);
+//         if (!isPasswordCorrect) {
+//             return resp.status(400).json({ error: "Invalid  Password" });
+//         }
+//         generateTokenAndSetCookie(user._id, resp);
+        
+//         console.log(isPasswordCorrect);
+//         resp.status(200).json({
+//             _id: user._id,
+//             fullname: user.fullname,
+//             username: user.username,
+//             gender: user.gender,
+//             profilePic: user.profilePic,
+//         });
+//     } catch (error) {
+//         console.log("error in login controller",error.message)
+//         resp.status(500).json({error: "Internal Server Error"})        
+//     }
+// }
 
 export const logout = (req,resp)=>{
     try {
