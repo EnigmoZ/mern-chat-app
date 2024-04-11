@@ -7,8 +7,6 @@ const useLogin = () => {
   const {setAuthUser} = useAuthContext()
 
 const login = async (username, password) => {
-    toast.success(username)
-    toast.success(password)
     const success = handleInputErrors(username, password);
     if (!success) return;
     setLoading(true)
